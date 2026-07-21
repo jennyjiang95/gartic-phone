@@ -2,6 +2,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import path from 'path';
 import { RoomManager } from './rooms/RoomManager';
 import { registerRoomEvents } from './events/roomEvents';
 import { registerGameEvents } from './events/gameEvents';
@@ -11,21 +12,31 @@ import { registerChatEvents } from './events/chatEvents';
 const app = express();
 const httpServer = createServer(app);
 
+const isProd = process.env.NODE_ENV === 'production';
 const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
 
-app.use(cors({ origin: corsOrigin }));
+if (isProd) {
+  const clientDist = path.join(__dirname, '../../client/dist');
+  app.use(express.static(clientDist));
+} else {
+  app.use(cors({ origin: corsOrigin }));
+}
 app.use(express.json());
 
-const io = new Server(httpServer, {
-  cors: {
-    origin: corsOrigin,
-    methods: ['GET', 'POST'],
-  },
-});
+const ioOptions = isProd
+  ? {}
+  : { cors: { origin: corsOrigin, methods: ['GET', 'POST'] } };
+
+const io = new Server(httpServer, ioOptions);
 
 const roomManager = new RoomManager();
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
+if (isProd) {
+  const clientDist = path.join(__dirname, '../../client/dist');
+  app.get('*', (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+}
 
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);

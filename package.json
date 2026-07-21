@@ -1,0 +1,11 @@
+{
+  "name": "gartic-phone",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd client && npm ci && npm run build && cd ../server && npm ci && npm run build",
+    "start": "node server/dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
