@@ -5,6 +5,9 @@ services:
     buildCommand: npm run build
     startCommand: NODE_ENV=production npm start
     healthCheckPath: /health
+    port: 10000
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
