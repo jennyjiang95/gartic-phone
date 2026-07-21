@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #eee;
+  min-height: 100vh;
+}
+
+.canvas-cursor-pencil { cursor: crosshair; }
+.canvas-cursor-eraser { cursor: cell; }
+.canvas-cursor-fill { cursor: copy; }
+.canvas-cursor-rect,
+.canvas-cursor-circle,
+.canvas-cursor-line { cursor: crosshair; }

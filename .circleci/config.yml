@@ -1,0 +1,90 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.1.0
+  docker: circleci/docker@2.4.0
+
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:20.0
+    working_directory: ~/project
+
+jobs:
+  test-server:
+    executor: node-executor
+    steps:
+      - checkout
+      - node/install-packages:
+          app-dir: server
+      - run:
+          name: TypeScript compile check
+          command: cd server && npx tsc --noEmit
+
+  test-client:
+    executor: node-executor
+    steps:
+      - checkout
+      - node/install-packages:
+          app-dir: client
+      - run:
+          name: TypeScript compile check
+          command: cd client && npx tsc --noEmit
+      - run:
+          name: Build client
+          command: cd client && npm run build
+
+  build-push-server:
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - docker/check:
+          registry: ${ARTIFACTORY_URL}
+      - docker/build:
+          image: ${ARTIFACTORY_URL}/gartic-phone-server
+          path: ./server
+          tag: ${CIRCLE_SHA1},latest
+      - docker/push:
+          image: ${ARTIFACTORY_URL}/gartic-phone-server
+          tag: ${CIRCLE_SHA1}
+      - docker/push:
+          image: ${ARTIFACTORY_URL}/gartic-phone-server
+          tag: latest
+
+  build-push-client:
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - docker/check:
+          registry: ${ARTIFACTORY_URL}
+      - docker/build:
+          image: ${ARTIFACTORY_URL}/gartic-phone-client
+          path: ./client
+          tag: ${CIRCLE_SHA1},latest
+      - docker/push:
+          image: ${ARTIFACTORY_URL}/gartic-phone-client
+          tag: ${CIRCLE_SHA1}
+      - docker/push:
+          image: ${ARTIFACTORY_URL}/gartic-phone-client
+          tag: latest
+
+workflows:
+  version: 2
+  ci-cd:
+    jobs:
+      - test-server
+      - test-client
+      - build-push-server:
+          requires:
+            - test-server
+          filters:
+            branches:
+              only: main
+      - build-push-client:
+          requires:
+            - test-client
+          filters:
+            branches:
+              only: main

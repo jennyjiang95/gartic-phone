@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  client:
+    build: ./client
+    ports:
+      - '3000:80'
+    depends_on:
+      - server
+    networks:
+      - gartic-net
+
+  server:
+    build: ./server
+    ports:
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      CORS_ORIGIN: http://localhost:3000
+      NODE_ENV: production
+    networks:
+      - gartic-net
+
+networks:
+  gartic-net:
+    driver: bridge
