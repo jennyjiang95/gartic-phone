@@ -2,7 +2,10 @@
   "name": "gartic-phone",
   "version": "1.0.0",
   "scripts": {
-    "build": "cd client && npm ci && npm run build && cd ../server && npm ci && npm run build",
+    "install:all": "npm ci --prefix client && npm ci --prefix server",
+    "build:client": "npm run build --prefix client",
+    "build:server": "npm run build --prefix server",
+    "build": "npm run install:all && npm run build:client && npm run build:server",
     "start": "node server/dist/index.js"
   },
   "engines": {
